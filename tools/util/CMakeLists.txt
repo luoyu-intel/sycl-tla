@@ -50,14 +50,14 @@ target_link_libraries(
   )
 
 # Add oneMKL for SYCL builds (sycl_tensor_fill.h needs oneapi/mkl/rng/device.hpp)
-if (CUTLASS_ENABLE_SYCL)
-  if (CUTLASS_USING_SYSTEM_ONEMKL)
-    target_link_libraries(cutlass_tools_util_includes INTERFACE MKL::MKL)
-  else()
-    target_include_directories(cutlass_tools_util_includes INTERFACE 
-      $<BUILD_INTERFACE:${ONEMKL_INCLUDE_DIR}>)
-  endif()
-endif()
+# if (CUTLASS_ENABLE_SYCL)
+#   if (CUTLASS_USING_SYSTEM_ONEMKL)
+#     target_link_libraries(cutlass_tools_util_includes INTERFACE MKL::MKL)
+#   else()
+#     target_include_directories(cutlass_tools_util_includes INTERFACE 
+#       $<BUILD_INTERFACE:${ONEMKL_INCLUDE_DIR}>)
+#   endif()
+# endif()
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
