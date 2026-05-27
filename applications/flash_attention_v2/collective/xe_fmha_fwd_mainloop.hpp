@@ -478,14 +478,14 @@ struct FMHAFwdMainloop<XeDefault<Stages>, CausalMask_, CachedKV_, PagedKV_,
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < tS_max.size(); i++) {
       ElementS new_max = sycl::max(tS_max(i), params.scale * tS_bmax(i));
-      rescale(i) = sycl::native::exp2(tS_max(i) - new_max);
+      rescale(i) = sycl::exp2(tS_max(i) - new_max);
       tS_max(i) = new_max;
     }
 
     /* Scale S and subtract maxima, then exponentiate */
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < tS.size(); i++)
-      tS(i) = sycl::native::exp2(params.scale * tS(i) - broadcast<0>(tS_max, tS, i));
+      tS(i) = sycl::exp2(params.scale * tS(i) - broadcast<0>(tS_max, tS, i));
 
     /* Rescale existing S sums */
     if (!first_block) {
