@@ -260,12 +260,16 @@ public:
       auto dcV_cache = const_cast<ElementV*>(p.V_cache + offset_v_cache);
       auto ptrO = p.O + offset_o;
 
-      auto stride_q = is_var_len ? cutlass::make_cute_packed_stride(StrideQ{}, shape_Q) : p.dQ;
-      auto stride_k = is_var_len ? cutlass::make_cute_packed_stride(StrideK{}, shape_K) : p.dK;
-      auto stride_v = is_var_len ? cutlass::make_cute_packed_stride(StrideV{}, shape_V) : p.dV;
-      auto stride_o = is_var_len ? cutlass::make_cute_packed_stride(StrideO{}, shape_O) : p.dO;
-      auto stride_k_cache = is_var_len ? cutlass::make_cute_packed_stride(StrideK{}, shape_K_cache) : p.dK_cache;
-      auto stride_v_cache = is_var_len ? cutlass::make_cute_packed_stride(StrideV{}, shape_V_cache) : p.dV_cache;
+      // Varlen: use host-provided strides for flat [total, H, D] layout.
+      // make_cute_packed_stride produces wrong strides for this layout
+      // (it computes stride based on shape which does not match the
+      // flat tensor's actual memory layout), so always use p.dX.
+      auto stride_q = p.dQ;
+      auto stride_k = p.dK;
+      auto stride_v = p.dV;
+      auto stride_o = p.dO;
+      auto stride_k_cache = p.dK_cache;
+      auto stride_v_cache = p.dV_cache;
 
       Tensor Q = make_tensor(make_gmem_ptr(dcQ), make_layout(shape_Q, stride_q));
       Tensor K = make_tensor(make_gmem_ptr(dcK), make_layout(shape_K, stride_k));
