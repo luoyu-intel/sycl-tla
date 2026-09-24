@@ -609,7 +609,15 @@ Use 64 bits as memory_bus_width default value."
 
   void set_default_queue(const sycl::queue &q) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    _queues.front().get()->wait_and_throw();
+    // Skip the blocking wait on the previous default queue when the incoming
+    // queue is recording a graph: a host-side synchronization is illegal while
+    // a sycl/torch graph is being captured (e.g. torch.xpu CUDAGraph capture).
+    // The in-place _queues[0] swap below reuses the existing shared_ptr slot,
+    // so no destructor-based wait is triggered while the capture is in flight.
+    if (q.ext_oneapi_get_state() !=
+        sycl::ext::oneapi::experimental::queue_state::recording) {
+      _queues.front().get()->wait_and_throw();
+    }
     _queues[0] = std::make_shared<sycl::queue>(q);
     if (_saved_queue == _default_queue)
       _saved_queue = _queues.front().get();
